@@ -66,6 +66,7 @@ const handleSaveNewSpot = () => {
       zoom={5}
       className="h-[500px] w-full"
       scrollWheelZoom={true}
+      style={{ zIndex: 0 }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <AddSpotHandler />
