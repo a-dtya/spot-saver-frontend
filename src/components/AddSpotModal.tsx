@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { fetchCoordinates } from '@/utils/googleMaps';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ const AddSpotModal: React.FC<AddSpotModalProps> = ({
   const [notes, setNotes] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [url, setUrl] = useState('');
 
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -49,8 +51,19 @@ const AddSpotModal: React.FC<AddSpotModalProps> = ({
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim() || !location.trim()) return;
+
+    // Validate URL format if provided
+    if (url) {
+      const coordinates = await fetchCoordinates(url);
+      if (coordinates) {
+        initialCoordinates = coordinates;
+      } else {
+        console.error('Invalid Google Maps URL');
+        return;
+      }
+    }
 
     onSave({
       name: name.trim(),
@@ -66,6 +79,7 @@ const AddSpotModal: React.FC<AddSpotModalProps> = ({
     setNotes('');
     setTags([]);
     setNewTag('');
+    setUrl('');
     onClose();
   };
 
@@ -76,12 +90,13 @@ const AddSpotModal: React.FC<AddSpotModalProps> = ({
     setNotes('');
     setTags([]);
     setNewTag('');
+    setUrl('');
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-gradient-card border-0 shadow-warm">
+      <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto bg-gradient-card border-0 shadow-warm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <MapPin className="w-5 h-5" />
@@ -114,7 +129,18 @@ const AddSpotModal: React.FC<AddSpotModalProps> = ({
               className="border-primary/20 focus:border-primary"
             />
           </div>
-          
+
+          <div className="space-y-2">
+            <Label htmlFor="url">Google Maps URL</Label>
+            <Input
+              id="url"
+              placeholder="e.g., https://maps.google.com/?q=lat,lng"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="border-primary/20 focus:border-primary"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="tags">Tags</Label>
             <div className="flex gap-2">

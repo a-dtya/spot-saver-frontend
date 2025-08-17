@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddSpotModal from '@/components/AddSpotModal';
+import { supabase } from '@/lib/supabaseClient';
 
 interface Spot {
   name: string;
@@ -14,16 +15,30 @@ const AddSpotPage = () => {
   const navigate = useNavigate();
   const [newSpotCoords, setNewSpotCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  const handleSaveSpot = (spot: Spot) => {
+  const handleSaveSpot = async (spot: Spot) => {
     console.log('Spot saved', spot);
-    // TODO: Add to your state or Supabase
+    const { data, error } = await supabase
+    .from('spots')
+    .insert([
+      {
+        name: spot.name,
+        location: spot.location,
+        tags: spot.tags,
+        notes: spot.notes || null,
+        coordinates: spot.coordinates,
+      }
+    ]);
+    if (error) {
+      console.error('Error saving spot:', error);
+      return;
+    }
     navigate('/'); // go back to map page
   };
 
   const handleClose = () => navigate('/');
 
   return (
-    <div className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed z-[10010] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <AddSpotModal
         isOpen={true}
         onClose={handleClose}
